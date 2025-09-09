@@ -4,9 +4,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip } from '
 import { motion } from 'framer-motion'
 
 
-// Complete, fixed React survey app with calming environment theme
-const DEFAULTS = {
-  gridKgCO2PerKWh: 0.7,
+// Indian-specific carbon footprint survey defaults
+const INDIAN_DEFAULTS = {
+  gridKgCO2PerKWh: 0.82, // India's grid has higher carbon intensity due to coal dependency
   devicePowerW: {
     Smartphone: 5,
     Laptop: 50,
@@ -19,9 +19,9 @@ const DEFAULTS = {
     'Smart Home Devices': 25,
     'Router': 10,
   },
-  kgCO2PerGB: 0.05,
-  inrPerTonneCO2: 2000,
-  gbPerStreamingHour: 1.5,
+  kgCO2PerGB: 0.06, // Slightly higher due to data center infrastructure in India
+  inrPerTonneCO2: 2500, // Updated Indian carbon pricing
+  gbPerStreamingHour: 1.5, // Standard HD streaming data usage
 }
 
 const INDIAN_STATES = [
@@ -37,8 +37,7 @@ function round(num, decimals = 2) {
 }
 
 export default function SurveySite() {
-  const [webhookUrl, setWebhookUrl] = useState('')
-  const [defaults, setDefaults] = useState(DEFAULTS)
+  const defaults = INDIAN_DEFAULTS
   const [message, setMessage] = useState(null)
 
   const [form, setForm] = useState({
@@ -101,6 +100,13 @@ export default function SurveySite() {
     largeTransfersPerMonth: '',
     accessRenewableAtHome: '',
     estimatedAnnualKgCO2: '',
+    // Quiz questions
+    quizDataUsage: '',
+    quizDeviceLifespan: '',
+    quizChargingImpact: '',
+    quizStreamingFootprint: '',
+    quizRenewableEnergy: '',
+    quizAIFootprint: '',
     consent: false,
   })
 
@@ -215,39 +221,16 @@ export default function SurveySite() {
     URL.revokeObjectURL(url)
   }
 
-  async function handleSubmit() {
+  function handleSubmit() {
     if (!form.consent) {
       setMessage({ type: 'error', text: 'Please provide consent to participate.' })
       return
     }
 
-    const data = {
-      participantId: generateParticipantId(),
-      timestamp: new Date().toISOString(),
-      form,
-      results,
-      cityState: getCityState()
-    }
-
-    try {
-      if (webhookUrl) {
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        })
-      }
-      
-      setMessage({ 
-        type: 'success', 
-        text: 'Survey submitted successfully! Your carbon footprint has been calculated.' 
-      })
-    } catch (error) {
-      setMessage({ 
-        type: 'error', 
-        text: 'Failed to submit survey. Please try again.' 
-      })
-    }
+    setMessage({ 
+      type: 'success', 
+      text: 'Survey completed successfully! Your carbon footprint has been calculated.' 
+    })
   }
 
   // Pie chart data
@@ -291,11 +274,11 @@ export default function SurveySite() {
               <Select label="Gender" value={form.gender} onChange={(v) => setForm({ ...form, gender: v })} options={["Male","Female","Other"]} />
               <Select label="Occupation" value={form.occupation} onChange={(v) => setForm({ ...form, occupation: v })} options={["Student","Employed","Self-Employed","Unemployed","Other"]} />
               {form.occupation === 'Other' && <Input label="Please specify occupation" value={form.customOccupation} onChange={(v) => setForm({ ...form, customOccupation: v })} />}
-              <Select label="Schooling" value={form.schooling} onChange={(v) => setForm({ ...form, schooling: v })} options={["Government","Private","Convent","Other"]} />
-              <Input label="City" value={form.city} onChange={(v) => setForm({ ...form, city: v })} />
-              <Select label="State" value={form.state} onChange={(v) => setForm({ ...form, state: v })} options={INDIAN_STATES} />
+              <Select label="Home Schooling" value={form.schooling} onChange={(v) => setForm({ ...form, schooling: v })} options={["Government","Private","Convent","Other"]} />
+              <Input label="Home City" value={form.city} onChange={(v) => setForm({ ...form, city: v })} />
+              <Select label="Home State" value={form.state} onChange={(v) => setForm({ ...form, state: v })} options={INDIAN_STATES} />
               <Select label="City Tier" value={form.cityTier} onChange={(v) => setForm({ ...form, cityTier: v })} options={["1","2","3"]} />
-              <Select label="Accommodation" value={form.accommodation} onChange={(v) => setForm({ ...form, accommodation: v })} options={["Apartment","Independent House","Rented","Hostel","Other"]} />
+              <Select label="Current Accommodation" value={form.accommodation} onChange={(v) => setForm({ ...form, accommodation: v })} options={["Apartment","Independent House","Rented","Hostel","Other"]} />
               <Select label="Family Income Range" value={form.familyIncomeRange} onChange={(v) => setForm({ ...form, familyIncomeRange: v })} options={["<₹1L","₹1L-3L","₹3L-5L","₹5L-8L","₹8L-10L",">₹10L"]} />
             </div>
 
@@ -543,6 +526,86 @@ export default function SurveySite() {
 
               <hr />
 
+              <h3 className="text-lg font-medium">📱 Electronic Carbon Footprint Quiz</h3>
+              <div className="text-sm text-gray-600 mb-4">
+                Test your knowledge about electronic device carbon footprints! Rate each factor's impact from 1 (lowest) to 10 (highest).
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Data Usage Impact (1-10)
+                    <span className="block text-xs text-gray-500">How much does streaming 1 hour of HD video impact your carbon footprint?</span>
+                  </label>
+                  <Select 
+                    value={form.quizDataUsage} 
+                    onChange={(v) => setForm({ ...form, quizDataUsage: v })} 
+                    options={["1 (lowest)", "2", "3", "4", "5 (medium)", "6", "7", "8", "9", "10 (highest)"]} 
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Device Lifespan Impact (1-10)
+                    <span className="block text-xs text-gray-500">How much does using a smartphone for 5 years vs 2 years reduce carbon footprint?</span>
+                  </label>
+                  <Select 
+                    value={form.quizDeviceLifespan} 
+                    onChange={(v) => setForm({ ...form, quizDeviceLifespan: v })} 
+                    options={["1 (lowest)", "2", "3", "4", "5 (medium)", "6", "7", "8", "9", "10 (highest)"]} 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Charging Habits Impact (1-10)
+                    <span className="block text-xs text-gray-500">How much does keeping devices plugged in 24/7 increase carbon footprint?</span>
+                  </label>
+                  <Select 
+                    value={form.quizChargingImpact} 
+                    onChange={(v) => setForm({ ...form, quizChargingImpact: v })} 
+                    options={["1 (lowest)", "2", "3", "4", "5 (medium)", "6", "7", "8", "9", "10 (highest)"]} 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Streaming vs Gaming Impact (1-10)
+                    <span className="block text-xs text-gray-500">How much more carbon footprint does cloud gaming have vs Netflix streaming?</span>
+                  </label>
+                  <Select 
+                    value={form.quizStreamingFootprint} 
+                    onChange={(v) => setForm({ ...form, quizStreamingFootprint: v })} 
+                    options={["1 (lowest)", "2", "3", "4", "5 (medium)", "6", "7", "8", "9", "10 (highest)"]} 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Renewable Energy Impact (1-10)
+                    <span className="block text-xs text-gray-500">How much can switching to renewable energy reduce your electronic footprint?</span>
+                  </label>
+                  <Select 
+                    value={form.quizRenewableEnergy} 
+                    onChange={(v) => setForm({ ...form, quizRenewableEnergy: v })} 
+                    options={["1 (lowest)", "2", "3", "4", "5 (medium)", "6", "7", "8", "9", "10 (highest)"]} 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    AI Usage Impact (1-10)
+                    <span className="block text-xs text-gray-500">How much carbon footprint does generating AI images have vs text conversations?</span>
+                  </label>
+                  <Select 
+                    value={form.quizAIFootprint} 
+                    onChange={(v) => setForm({ ...form, quizAIFootprint: v })} 
+                    options={["1 (lowest)", "2", "3", "4", "5 (medium)", "6", "7", "8", "9", "10 (highest)"]} 
+                  />
+                </div>
+              </div>
+
+              <hr />
+
               <h3 className="text-lg font-medium">Sustainability & Awareness</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
                 <Select label="Access to renewable electricity at home" value={form.accessRenewableAtHome} onChange={(v) => setForm({ ...form, accessRenewableAtHome: v })} options={["Yes - fully","Partial / Sometimes","No"]} />
@@ -604,33 +667,7 @@ export default function SurveySite() {
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm text-gray-500">Admin / Emission Factors</div>
-                  <div className="text-xs text-gray-500">Adjust these before you collect data for accurate results.</div>
-                </div>
-              </div>
 
-              <div className="mt-3 space-y-3">
-                <LabeledInput label="Grid kgCO₂ per kWh" value={defaults.gridKgCO2PerKWh} onChange={(v) => setDefaults({ ...defaults, gridKgCO2PerKWh: Number(v) || 0 })} />
-                <LabeledInput label="kgCO₂ per GB transferred" value={defaults.kgCO2PerGB} onChange={(v) => setDefaults({ ...defaults, kgCO2PerGB: Number(v) || 0 })} />
-                <LabeledInput label="₹ per tCO₂" value={defaults.inrPerTonneCO2} onChange={(v) => setDefaults({ ...defaults, inrPerTonneCO2: Number(v) || 0 })} />
-                <LabeledInput label="Default GB per streaming hour" value={defaults.gbPerStreamingHour} onChange={(v) => setDefaults({ ...defaults, gbPerStreamingHour: Number(v) || 0 })} />
-                <div>
-                  <div className="text-sm text-gray-600">Webhook URL</div>
-                  <input value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://your-server.com/webhook" className="mt-1 p-2 rounded border w-full" />
-                </div>
-              </div>
-            </div>
-
-            {message && (
-              <div className={`p-3 rounded ${message.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
-                {message.text}
-              </div>
-            )}
-
-            <div className="text-xs text-gray-500">Tip: Replace default emission constants with authoritative sources (IEA, peer-reviewed papers, or local grid operator) for more accurate results.</div>
           </div>
         </div>
 
@@ -668,15 +705,6 @@ function Select({ label, value, onChange, options = [] }) {
   )
 }
 
-function LabeledInput({ label, value, onChange }) {
-  const v = value === null || value === undefined ? '' : String(value)
-  return (
-    <div>
-      <div className="text-sm text-gray-600">{label}</div>
-      <input value={v} onChange={(e) => onChange(e.target.value)} className="mt-1 p-2 rounded border w-full" />
-    </div>
-  )
-}
 
 function SmallStat({ icon, label, value, color }) {
   const bg = color === 'blue' ? 'bg-sky-50' : color === 'amber' ? 'bg-amber-50' : 'bg-emerald-50'
