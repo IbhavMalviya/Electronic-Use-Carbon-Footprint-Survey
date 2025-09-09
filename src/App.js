@@ -75,9 +75,25 @@ export default function SurveySite() {
     streamingDeviceDuration: '',
     smartHomeDevicesDuration: '',
     routerDuration: '',
+    smartphoneAge: '',
+    laptopAge: '',
+    tabletAge: '',
+    desktopAge: '',
+    smartTVAge: '',
+    otherDevicesAge: '',
+    gamingConsoleAge: '',
+    streamingDeviceAge: '',
+    smartHomeDevicesAge: '',
+    routerAge: '',
     noDevices: false,
+    chargingHabits: '',
+    powerSource: '',
+    renewableEnergyUsage: '',
+    solarPanels: '',
+    energyEfficientAppliances: '',
     aiInteractionsPerDay: '',
     aiTypes: '',
+    aiUsageTypes: '',
     typicalAiSessionMinutes: '',
     cloudHoursPerWeek: '',
     streamingAcademicHrsPerWeek: '',
@@ -106,11 +122,39 @@ export default function SurveySite() {
         { type: 'Other', count: Number(form.otherDevices) || 0, duration: Number(form.otherDevicesDuration) || 0 },
       ]
       
+      // Power source multiplier based on renewable energy usage
+      const getPowerSourceMultiplier = () => {
+        switch (form.renewableEnergyUsage) {
+          case "0% - All conventional energy": return 1.0
+          case "1-25% - Mostly conventional": return 0.9
+          case "26-50% - Mixed sources": return 0.7
+          case "51-75% - Mostly renewable": return 0.4
+          case "76-100% - All or mostly renewable": return 0.2
+          default: return 0.8 // Default assumption for "Don't know"
+        }
+      }
+
+      // Charging habits multiplier (affects efficiency)
+      const getChargingMultiplier = () => {
+        switch (form.chargingHabits) {
+          case "Always keep plugged in": return 1.3 // Higher consumption
+          case "Charge overnight (8+ hours)": return 1.1
+          case "Charge when needed (1-3 hours)": return 1.0 // Baseline
+          case "Quick charge frequently (15-30 min)": return 1.2 // Less efficient
+          case "Battery saver mode user": return 0.8 // More efficient
+          default: return 1.0
+        }
+      }
+
+      const powerSourceMultiplier = getPowerSourceMultiplier()
+      const chargingMultiplier = getChargingMultiplier()
+
       deviceData.forEach(({ type, count, duration }) => {
         if (count > 0 && duration > 0) {
           const powerW = defaults.devicePowerW[type] || 0
           const kwhPerYear = (powerW * duration * 365) / 1000
-          deviceKg += count * (kwhPerYear * defaults.gridKgCO2PerKWh)
+          const baseEmissions = count * (kwhPerYear * defaults.gridKgCO2PerKWh)
+          deviceKg += baseEmissions * powerSourceMultiplier * chargingMultiplier
         }
       })
     }
@@ -269,62 +313,73 @@ export default function SurveySite() {
               </div>
 
               <div>
-                <h4 className="font-medium mb-3">Devices Owned (Enter quantity and daily usage hours)</h4>
+                <h4 className="font-medium mb-3">Devices Owned (Enter quantity, daily usage hours, and age)</h4>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-3 items-center">
+                  <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="font-medium text-sm text-gray-600">Device Type</div>
                     <div className="font-medium text-sm text-gray-600">Quantity</div>
                     <div className="font-medium text-sm text-gray-600">Hours/Day</div>
+                    <div className="font-medium text-sm text-gray-600">Age (Years)</div>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 items-center">
+                  <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="text-sm">Smartphone</div>
                     <Input label="" value={form.smartphone} onChange={(v) => setForm({ ...form, smartphone: v })} placeholder="0" />
                     <Input label="" value={form.smartphoneDuration} onChange={(v) => setForm({ ...form, smartphoneDuration: v })} placeholder="0" />
+                    <Input label="" value={form.smartphoneAge} onChange={(v) => setForm({ ...form, smartphoneAge: v })} placeholder="0" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 items-center">
+                  <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="text-sm">Laptop</div>
                     <Input label="" value={form.laptop} onChange={(v) => setForm({ ...form, laptop: v })} placeholder="0" />
                     <Input label="" value={form.laptopDuration} onChange={(v) => setForm({ ...form, laptopDuration: v })} placeholder="0" />
+                    <Input label="" value={form.laptopAge} onChange={(v) => setForm({ ...form, laptopAge: v })} placeholder="0" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 items-center">
+                  <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="text-sm">Tablet</div>
                     <Input label="" value={form.tablet} onChange={(v) => setForm({ ...form, tablet: v })} placeholder="0" />
                     <Input label="" value={form.tabletDuration} onChange={(v) => setForm({ ...form, tabletDuration: v })} placeholder="0" />
+                    <Input label="" value={form.tabletAge} onChange={(v) => setForm({ ...form, tabletAge: v })} placeholder="0" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 items-center">
+                  <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="text-sm">Desktop</div>
                     <Input label="" value={form.desktop} onChange={(v) => setForm({ ...form, desktop: v })} placeholder="0" />
                     <Input label="" value={form.desktopDuration} onChange={(v) => setForm({ ...form, desktopDuration: v })} placeholder="0" />
+                    <Input label="" value={form.desktopAge} onChange={(v) => setForm({ ...form, desktopAge: v })} placeholder="0" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 items-center">
+                  <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="text-sm">Smart TV</div>
                     <Input label="" value={form.smartTV} onChange={(v) => setForm({ ...form, smartTV: v })} placeholder="0" />
                     <Input label="" value={form.smartTVDuration} onChange={(v) => setForm({ ...form, smartTVDuration: v })} placeholder="0" />
+                    <Input label="" value={form.smartTVAge} onChange={(v) => setForm({ ...form, smartTVAge: v })} placeholder="0" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 items-center">
+                  <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="text-sm">Gaming Console</div>
                     <Input label="" value={form.gamingConsole} onChange={(v) => setForm({ ...form, gamingConsole: v })} placeholder="0" />
                     <Input label="" value={form.gamingConsoleDuration} onChange={(v) => setForm({ ...form, gamingConsoleDuration: v })} placeholder="0" />
+                    <Input label="" value={form.gamingConsoleAge} onChange={(v) => setForm({ ...form, gamingConsoleAge: v })} placeholder="0" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 items-center">
+                  <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="text-sm">Streaming Device (Roku, Chromecast, etc.)</div>
                     <Input label="" value={form.streamingDevice} onChange={(v) => setForm({ ...form, streamingDevice: v })} placeholder="0" />
                     <Input label="" value={form.streamingDeviceDuration} onChange={(v) => setForm({ ...form, streamingDeviceDuration: v })} placeholder="0" />
+                    <Input label="" value={form.streamingDeviceAge} onChange={(v) => setForm({ ...form, streamingDeviceAge: v })} placeholder="0" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 items-center">
+                  <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="text-sm">Smart Home Devices (Alexa, etc.)</div>
                     <Input label="" value={form.smartHomeDevices} onChange={(v) => setForm({ ...form, smartHomeDevices: v })} placeholder="0" />
                     <Input label="" value={form.smartHomeDevicesDuration} onChange={(v) => setForm({ ...form, smartHomeDevicesDuration: v })} placeholder="0" />
+                    <Input label="" value={form.smartHomeDevicesAge} onChange={(v) => setForm({ ...form, smartHomeDevicesAge: v })} placeholder="0" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 items-center">
+                  <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="text-sm">Router/Modem</div>
                     <Input label="" value={form.router} onChange={(v) => setForm({ ...form, router: v })} placeholder="0" />
                     <Input label="" value={form.routerDuration} onChange={(v) => setForm({ ...form, routerDuration: v })} placeholder="24" />
+                    <Input label="" value={form.routerAge} onChange={(v) => setForm({ ...form, routerAge: v })} placeholder="0" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 items-center">
+                  <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="text-sm">Other devices</div>
                     <Input label="" value={form.otherDevices} onChange={(v) => setForm({ ...form, otherDevices: v })} placeholder="0" />
                     <Input label="" value={form.otherDevicesDuration} onChange={(v) => setForm({ ...form, otherDevicesDuration: v })} placeholder="0" />
+                    <Input label="" value={form.otherDevicesAge} onChange={(v) => setForm({ ...form, otherDevicesAge: v })} placeholder="0" />
                   </div>
                 </div>
                 <div className="mt-3">
@@ -337,14 +392,153 @@ export default function SurveySite() {
 
               <hr />
 
+              <h3 className="text-lg font-medium">Charging Habits & Power Sources</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Select 
+                  label="Primary charging habits" 
+                  value={form.chargingHabits} 
+                  onChange={(v) => setForm({ ...form, chargingHabits: v })} 
+                  options={[
+                    "Charge overnight (8+ hours)",
+                    "Charge when needed (1-3 hours)",
+                    "Quick charge frequently (15-30 min)",
+                    "Always keep plugged in",
+                    "Battery saver mode user"
+                  ]} 
+                />
+                <Select 
+                  label="Primary power source at home" 
+                  value={form.powerSource} 
+                  onChange={(v) => setForm({ ...form, powerSource: v })} 
+                  options={[
+                    "Grid electricity (regular)",
+                    "Grid electricity (renewable mix)",
+                    "Solar panels",
+                    "Mixed renewable sources",
+                    "Don't know"
+                  ]} 
+                />
+                <Select 
+                  label="Renewable energy usage" 
+                  value={form.renewableEnergyUsage} 
+                  onChange={(v) => setForm({ ...form, renewableEnergyUsage: v })} 
+                  options={[
+                    "0% - All conventional energy",
+                    "1-25% - Mostly conventional",
+                    "26-50% - Mixed sources",
+                    "51-75% - Mostly renewable",
+                    "76-100% - All or mostly renewable",
+                    "Don't know"
+                  ]} 
+                />
+                <Select 
+                  label="Do you have solar panels?" 
+                  value={form.solarPanels} 
+                  onChange={(v) => setForm({ ...form, solarPanels: v })} 
+                  options={[
+                    "Yes",
+                    "No",
+                    "Planning to install",
+                    "Don't know"
+                  ]} 
+                />
+                <Select 
+                  label="Energy-efficient appliances" 
+                  value={form.energyEfficientAppliances} 
+                  onChange={(v) => setForm({ ...form, energyEfficientAppliances: v })} 
+                  options={[
+                    "Yes - Most are energy-efficient",
+                    "Some are energy-efficient", 
+                    "No - Regular appliances",
+                    "Don't know"
+                  ]} 
+                />
+              </div>
+
+              <hr />
+
               <h3 className="text-lg font-medium">AI, Cloud & Streaming</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Input label="AI interactions per day" value={form.aiInteractionsPerDay} onChange={(v) => setForm({ ...form, aiInteractionsPerDay: v })} />
-                <Input label="Typical AI session length (min)" value={form.typicalAiSessionMinutes} onChange={(v) => setForm({ ...form, typicalAiSessionMinutes: v })} />
-                <Input label="Cloud services usage (hrs/week)" value={form.cloudHoursPerWeek} onChange={(v) => setForm({ ...form, cloudHoursPerWeek: v })} />
+                <Select 
+                  label="AI interactions per day" 
+                  value={form.aiInteractionsPerDay} 
+                  onChange={(v) => setForm({ ...form, aiInteractionsPerDay: v })} 
+                  options={[
+                    "0 - Don't use AI",
+                    "1-5 times",
+                    "6-15 times",
+                    "16-30 times",
+                    "31-50 times",
+                    "50+ times"
+                  ]} 
+                />
+                <Select 
+                  label="Type of AI usage" 
+                  value={form.aiUsageTypes} 
+                  onChange={(v) => setForm({ ...form, aiUsageTypes: v })} 
+                  options={[
+                    "Text generation (ChatGPT, etc.)",
+                    "Image generation (DALL-E, etc.)",
+                    "Code assistance (GitHub Copilot, etc.)",
+                    "Voice assistants (Siri, Alexa, etc.)",
+                    "Mixed usage (text + image + code)",
+                    "Other AI tools",
+                    "Don't use AI"
+                  ]} 
+                />
+                <Select 
+                  label="Typical AI session length" 
+                  value={form.typicalAiSessionMinutes} 
+                  onChange={(v) => setForm({ ...form, typicalAiSessionMinutes: v })} 
+                  options={[
+                    "Less than 1 minute",
+                    "1-5 minutes",
+                    "6-15 minutes",
+                    "16-30 minutes",
+                    "31-60 minutes",
+                    "More than 1 hour"
+                  ]} 
+                />
+                <Select 
+                  label="Cloud services usage (hrs/week)" 
+                  value={form.cloudHoursPerWeek} 
+                  onChange={(v) => setForm({ ...form, cloudHoursPerWeek: v })} 
+                  options={[
+                    "0 - Don't use cloud services",
+                    "1-5 hrs - Light usage (email, basic storage)",
+                    "6-15 hrs - Moderate usage (Google Drive, Office 365)",
+                    "16-30 hrs - Heavy usage (video calls, collaboration)",
+                    "31-50 hrs - Very heavy usage (streaming, gaming)",
+                    "50+ hrs - Constant usage (work/business)"
+                  ]} 
+                />
                 <Input label="Uploads / big transfers per month (GB)" value={form.largeTransfersPerMonth} onChange={(v) => setForm({ ...form, largeTransfersPerMonth: v })} />
-                <Input label="Streaming (academic hrs/week)" value={form.streamingAcademicHrsPerWeek} onChange={(v) => setForm({ ...form, streamingAcademicHrsPerWeek: v })} />
-                <Input label="Streaming (non-academic hrs/week)" value={form.streamingNonAcademicHrsPerWeek} onChange={(v) => setForm({ ...form, streamingNonAcademicHrsPerWeek: v })} />
+                <Select 
+                  label="Streaming (academic hrs/week)" 
+                  value={form.streamingAcademicHrsPerWeek} 
+                  onChange={(v) => setForm({ ...form, streamingAcademicHrsPerWeek: v })} 
+                  options={[
+                    "0 - No academic streaming",
+                    "1-5 hrs - Light (few lectures/courses)",
+                    "6-15 hrs - Moderate (regular classes)",
+                    "16-30 hrs - Heavy (full online courses)",
+                    "31-50 hrs - Very heavy (intensive programs)",
+                    "50+ hrs - Constant (full-time online)"
+                  ]} 
+                />
+                <Select 
+                  label="Streaming (entertainment hrs/week)" 
+                  value={form.streamingNonAcademicHrsPerWeek} 
+                  onChange={(v) => setForm({ ...form, streamingNonAcademicHrsPerWeek: v })} 
+                  options={[
+                    "0 - No entertainment streaming",
+                    "1-10 hrs - Light (occasional shows)",
+                    "11-25 hrs - Moderate (regular viewing)",
+                    "26-40 hrs - Heavy (daily streaming)",
+                    "41-60 hrs - Very heavy (binge watcher)",
+                    "60+ hrs - Constant (background streaming)"
+                  ]} 
+                />
               </div>
 
               <hr />
