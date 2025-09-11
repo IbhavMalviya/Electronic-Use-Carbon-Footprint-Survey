@@ -97,7 +97,6 @@ export default function SurveySite() {
     streamingDeviceAge: '',
     smartHomeDevicesAge: '',
     routerAge: '',
-    noDevices: false,
     chargingHabits: '',
     powerSource: '',
     renewableEnergyUsage: '',
@@ -127,8 +126,7 @@ export default function SurveySite() {
   const results = useMemo(() => {
     // Device calculations - based on device counts and actual usage duration
     let deviceKg = 0
-    if (!form.noDevices) {
-      const deviceData = [
+    const deviceData = [
         { type: 'Smartphone', count: Number(form.smartphone) || 0, duration: Number(form.smartphoneDuration) || 0 },
         { type: 'Laptop', count: Number(form.laptop) || 0, duration: Number(form.laptopDuration) || 0 },
         { type: 'Tablet', count: Number(form.tablet) || 0, duration: Number(form.tabletDuration) || 0 },
@@ -176,7 +174,6 @@ export default function SurveySite() {
           deviceKg += baseEmissions * powerSourceMultiplier * chargingMultiplier
         }
       })
-    }
 
     // Data and streaming calculations (updated for accuracy)
     // Parse academic streaming from range
@@ -341,51 +338,6 @@ export default function SurveySite() {
           </div>
         </div>
 
-        {/* Digital Carbon Facts */}
-        <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-6 mb-6 border border-blue-100">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Info size={24} className="text-blue-600" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-800">💡 Digital Carbon Facts</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <div className="font-semibold text-blue-600 mb-2">📡 Global Data Infrastructure Cost</div>
-              <div className="text-gray-700">Transferring 1GB globally costs <strong>₹0.80-2.50</strong> including undersea cables, data centers, bandwidth, cooling systems, and maintenance workforce.</div>
-              <div className="mt-2 p-2 bg-blue-50 rounded text-xs"><strong>💰 Daily Cost:</strong> ₹2,300 crores spent daily on global internet infrastructure!</div>
-            </div>
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <div className="font-semibold text-green-600 mb-2">🎬 Streaming Infrastructure</div>
-              <div className="text-gray-700">Netflix spends <strong>₹15,000 crores annually</strong> on content delivery networks (CDNs) and bandwidth to stream videos worldwide smoothly.</div>
-              <div className="mt-2 p-2 bg-green-50 rounded text-xs"><strong>💰 Daily Reality:</strong> ₹41 crores daily just for Netflix's streaming infrastructure</div>
-            </div>
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <div className="font-semibold text-purple-600 mb-2">🤖 AI Infrastructure Cost</div>
-              <div className="text-gray-700">OpenAI spends <strong>₹2,100 crores monthly</strong> on computing infrastructure. Google's AI data centers cost <strong>₹50,000 crores</strong> to build.</div>
-              <div className="mt-2 p-2 bg-purple-50 rounded text-xs"><strong>💰 Daily Scale:</strong> ₹70 crores daily spent by OpenAI alone on computing power</div>
-            </div>
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <div className="font-semibold text-amber-600 mb-2">📱 Manufacturing Infrastructure</div>
-              <div className="text-gray-700">Foxconn's iPhone factories cost <strong>₹40,000 crores</strong> to setup. Semiconductor fabs cost <strong>₹80,000+ crores</strong> each to build.</div>
-              <div className="mt-2 p-2 bg-amber-50 rounded text-xs"><strong>💰 Daily Production:</strong> ₹550 crores worth of global electronics manufactured daily</div>
-            </div>
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <div className="font-semibold text-red-600 mb-2">🔋 Power Grid Infrastructure</div>
-              <div className="text-gray-700">India's power grid infrastructure is worth <strong>₹25 lakh crores</strong>. Each power plant costs ₹15,000-50,000 crores to build and maintain.</div>
-              <div className="mt-2 p-2 bg-red-50 rounded text-xs"><strong>💰 Daily Maintenance:</strong> ₹137 crores daily maintenance for India's electricity grid</div>
-            </div>
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <div className="font-semibold text-teal-600 mb-2">🌱 Undersea Cable Reality</div>
-              <div className="text-gray-700">Undersea internet cables cost <strong>₹2,500-4,000 crores per cable</strong>. 400+ cables carry 99% of international data worldwide.</div>
-              <div className="mt-2 p-2 bg-teal-50 rounded text-xs"><strong>💰 Daily Operations:</strong> ₹85 crores daily to operate and maintain undersea cables</div>
-            </div>
-          </div>
-          <div className="mt-4 text-center">
-            <div className="text-xs text-gray-600">💚 Your responses help researchers understand digital behavior patterns and promote sustainable technology use!</div>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Form */}
           <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow">
@@ -416,13 +368,13 @@ export default function SurveySite() {
               </div>
 
               <div>
-                <h4 className="font-medium mb-3">Devices Owned (Enter quantity, daily usage hours, and age)</h4>
+                <h4 className="font-medium mb-3">Devices Owned (Enter quantity of devices, Daily usage hours, and Age of the devices)</h4>
                 <div className="space-y-4">
                   <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="font-medium text-sm text-gray-600">Device Type</div>
-                    <div className="font-medium text-sm text-gray-600">Quantity</div>
+                    <div className="font-medium text-sm text-gray-600">Number of devices</div>
                     <div className="font-medium text-sm text-gray-600">Hours/Day</div>
-                    <div className="font-medium text-sm text-gray-600">Age (Years)</div>
+                    <div className="font-medium text-sm text-gray-600">Age of the devices (Years)</div>
                   </div>
                   <div className="grid grid-cols-4 gap-3 items-center">
                     <div className="text-sm">Smartphone</div>
@@ -484,12 +436,6 @@ export default function SurveySite() {
                     <Input label="" value={form.otherDevicesDuration} onChange={(v) => setForm({ ...form, otherDevicesDuration: v })} placeholder="0" />
                     <Input label="" value={form.otherDevicesAge} onChange={(v) => setForm({ ...form, otherDevicesAge: v })} placeholder="0" />
                   </div>
-                </div>
-                <div className="mt-3">
-                  <label className="inline-flex items-center gap-2">
-                    <input type="checkbox" checked={!!form.noDevices} onChange={(e) => setForm({ ...form, noDevices: e.target.checked })} />
-                    <span className="text-sm">I don't own any electronic devices</span>
-                  </label>
                 </div>
               </div>
 
@@ -645,6 +591,51 @@ export default function SurveySite() {
               </div>
 
               <hr />
+
+              {/* Digital Carbon Facts */}
+              <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-6 mb-6 border border-blue-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Info size={24} className="text-blue-600" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-800">💡 Digital Carbon Facts</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                  <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <div className="font-semibold text-blue-600 mb-2">📡 Global Data Infrastructure Cost</div>
+                    <div className="text-gray-700">Transferring 1GB globally costs <strong>₹0.80-2.50</strong> including undersea cables, data centers, bandwidth, cooling systems, and maintenance workforce.</div>
+                    <div className="mt-2 p-2 bg-blue-50 rounded text-xs"><strong>💰 Daily Cost:</strong> ₹2,300 crores spent daily on global internet infrastructure!</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <div className="font-semibold text-green-600 mb-2">🎬 Streaming Infrastructure</div>
+                    <div className="text-gray-700">Netflix spends <strong>₹15,000 crores annually</strong> on content delivery networks (CDNs) and bandwidth to stream videos worldwide smoothly.</div>
+                    <div className="mt-2 p-2 bg-green-50 rounded text-xs"><strong>💰 Daily Reality:</strong> ₹41 crores daily just for Netflix's streaming infrastructure</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <div className="font-semibold text-purple-600 mb-2">🤖 AI Infrastructure Cost</div>
+                    <div className="text-gray-700">OpenAI spends <strong>₹2,100 crores monthly</strong> on computing infrastructure. Google's AI data centers cost <strong>₹50,000 crores</strong> to build.</div>
+                    <div className="mt-2 p-2 bg-purple-50 rounded text-xs"><strong>💰 Daily Scale:</strong> ₹70 crores daily spent by OpenAI alone on computing power</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <div className="font-semibold text-amber-600 mb-2">📱 Manufacturing Infrastructure</div>
+                    <div className="text-gray-700">Foxconn's iPhone factories cost <strong>₹40,000 crores</strong> to setup. Semiconductor fabs cost <strong>₹80,000+ crores</strong> each to build.</div>
+                    <div className="mt-2 p-2 bg-amber-50 rounded text-xs"><strong>💰 Daily Production:</strong> ₹550 crores worth of global electronics manufactured daily</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <div className="font-semibold text-red-600 mb-2">🔋 Power Grid Infrastructure</div>
+                    <div className="text-gray-700">India's power grid infrastructure is worth <strong>₹25 lakh crores</strong>. Each power plant costs ₹15,000-50,000 crores to build and maintain.</div>
+                    <div className="mt-2 p-2 bg-red-50 rounded text-xs"><strong>💰 Daily Maintenance:</strong> ₹137 crores daily maintenance for India's electricity grid</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <div className="font-semibold text-teal-600 mb-2">🌱 Undersea Cable Reality</div>
+                    <div className="text-gray-700">Undersea internet cables cost <strong>₹2,500-4,000 crores per cable</strong>. 400+ cables carry 99% of international data worldwide.</div>
+                    <div className="mt-2 p-2 bg-teal-50 rounded text-xs"><strong>💰 Daily Operations:</strong> ₹85 crores daily to operate and maintain undersea cables</div>
+                  </div>
+                </div>
+                <div className="mt-4 text-center">
+                  <div className="text-xs text-gray-600">💚 Your responses help researchers understand digital behavior patterns and promote sustainable technology use!</div>
+                </div>
+              </div>
 
               <h3 className="text-lg font-medium">📱 Electronic Carbon Footprint Quiz</h3>
               <div className="text-sm text-gray-600 mb-4">
